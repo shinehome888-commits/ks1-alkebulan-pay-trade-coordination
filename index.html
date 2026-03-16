@@ -3,88 +3,62 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>KS1 ALKEBULAN PAY – Trade Coordination</title>
+  <title>KS1 Trade Coordination</title>
   <style>
-    :root { --deep-blue: #002147; --gold: #D4AF37; }
-    * { margin:0; padding:0; box-sizing:border-box; font-family:Segoe UI, Tahoma, Geneva, Verdana, sans-serif; }
-    body { background: var(--deep-blue); color:white; padding:20px; min-height:100vh; display:flex; justify-content:center; align-items:center; }
-    .container { background:rgba(255,255,255,0.08); backdrop-filter:blur(10px); border-radius:16px; padding:32px; width:100%; max-width:500px; border:1px solid rgba(255,255,255,0.15); text-align:center; }
-    h1 { font-size:28px; margin-bottom:4px; }
-    .subtitle { color:#ccc; margin-bottom:24px; font-size:16px; }
-    input { width:100%; padding:12px; margin:10px 0; border-radius:8px; border:1px solid #ddd; font-size:16px; }
-    .btn { background:var(--gold); color:var(--deep-blue); border:none; border-radius:8px; padding:14px; width:100%; font-weight:bold; font-size:16px; cursor:pointer; margin:16px 0; }
-    .primary { background:white; color:var(--deep-blue); }
-    .link { color:#aaa; text-align:center; margin-top:12px; cursor:pointer; }
-    .link:hover { text-decoration:underline; }
-    .hidden { display:none; }
-    .disclaimer { margin-top:20px; padding:12px; background:rgba(0,0,0,0.2); border-radius:8px; font-size:12px; color:#ddd; }
-    footer { margin-top:30px; font-size:12px; color:#bbb; }
+    body { font-family: Arial, sans-serif; background: #050A16; color: white; padding: 20px; }
+    .container { max-width: 700px; margin: 0 auto; }
+    input, select, button {
+      width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #444;
+      background: #111; color: white; font-size: 16px;
+    }
+    button { background: #D4AF37; color: #001A3D; border: none; font-weight: bold; cursor: pointer; }
+    .card { background: rgba(255,255,255,0.05); padding: 24px; border-radius: 16px; margin-top: 20px; }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>KS1 ALKEBULAN PAY</h1>
-    <p class="subtitle">Trade Coordination • Powered By KS1EGF</p>
-
-    <div id="loginSection">
-      <input type="text" id="loginTradeId" placeholder="Your Trade ID (e.g. KS1-A1B2)" required />
-      <input type="password" id="loginPassword" placeholder="Password" required />
-      <button class="btn gold" onclick="login()">Access Dashboard</button>
-      <p class="link" onclick="showRegister()">New Registration</p>
-    </div>
-
-    <div id="registerSection" class="hidden">
-      <h2>New to KS1?</h2>
-      <p>Create your digital trade identity first.</p>
-      <button class="btn primary" onclick="goToIdentityHub()">Go to Identity Hub</button>
-      <p class="link" onclick="showLogin()">← Back to Login</p>
-    </div>
-
-    <div class="disclaimer">
-      <small>All payments are settled through licensed Ghanaian payment providers (e.g., Hubtel, MTN MoMo). KS1 ALKEBULAN PAY only coordinates trade terms — it does not hold, lend, or issue money.</small>
-    </div>
-
-    <footer>
-      <p>© 2026 KS1 ALKEBULAN PAY – A Nonprofit Project By KS1 Empire Group & Foundation (KS1EGF)</p>
-    </footer>
+    <h2>Start a New Trade</h2>
+    <input type="text" id="sellerSmeId" placeholder="Seller SME ID (e.g., KS1-T5WQ)" required />
+    <input type="text" id="buyerSmeId" placeholder="Buyer SME ID" required />
+    <input type="number" id="amount" placeholder="Trade Amount (GHS)" required />
+    <button onclick="submitTrade()">Confirm Trade</button>
+    <div id="result"></div>
   </div>
 
   <script>
-    const API_BASE = 'https://ks1-alkebulan-pay-backend.onrender.com';
+    async function submitTrade() {
+      const sellerSmeId = document.getElementById('sellerSmeId').value.trim();
+      const buyerSmeId = document.getElementById('buyerSmeId').value.trim();
+      const amount = parseFloat(document.getElementById('amount').value);
 
-    function showRegister() {
-      document.getElementById('loginSection').classList.add('hidden');
-      document.getElementById('registerSection').classList.remove('hidden');
-    }
+      if (!sellerSmeId || !buyerSmeId || isNaN(amount)) {
+        alert('Please fill all fields correctly.');
+        return;
+      }
 
-    function showLogin() {
-      document.getElementById('registerSection').classList.add('hidden');
-      document.getElementById('loginSection').classList.remove('hidden');
-    }
+      // Simulate trade processing
+      document.getElementById('result').innerHTML = '<p>Processing trade...</p>';
 
-    function goToIdentityHub() {
-      window.location.href = 'https://ks1-alkebulan-pay-identity-hub.pages.dev';
-    }
-
-    async function login() {
-      const tradeId = document.getElementById('loginTradeId').value.trim();
-      const password = document.getElementById('loginPassword').value;
       try {
-        const res = await fetch(`${API_BASE}/auth/login`, {
+        // In real system: call escrow API
+        await new Promise(r => setTimeout(r, 1000)); // simulate delay
+
+        // 🔥 Notify Trust Score: Trade completed
+        fetch('https://ks1-trust-score.onrender.com/api/trust/recalculate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ identifier: tradeId, password })
-        });
-        const result = await res.json();
-        if (res.ok && result.token) {
-          localStorage.setItem('ks1_token', result.token);
-          localStorage.setItem('ks1_tradeId', tradeId);
-          window.location.href = 'dashboard.html';
-        } else {
-          alert(result.message || 'Login failed');
-        }
+          body: JSON.stringify({
+            smeId: sellerSmeId,
+            eventType: 'transaction.completed',
+            eventData: { amount }
+          })
+        }).catch(err => console.error('Trust Score update failed:', err));
+
+        document.getElementById('result').innerHTML = 
+          `<p style="color:#4caf50;">✅ Trade confirmed! Seller reputation updated.</p>`;
       } catch (err) {
-        alert('Network error. Please try again.');
+        document.getElementById('result').innerHTML = 
+          `<p style="color:#f44336;">❌ Trade failed: ${err.message}</p>`;
       }
     }
   </script>
